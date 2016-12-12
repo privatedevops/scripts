@@ -35,8 +35,8 @@ now=`date "+%d-%h-%Y %H:%M %Z"`
 logdir="$base_dir/logs"
 log="$logdir/$shortname.log"
 
-BKPMUSR='xbuser'
-BKPMPASS='xbUs3R_#2384@'
+BKPMUSR='backup user here'
+BKPMPASS='backup user pass here'
 BKPDEST="/backups/sqlbackups/"
 BKPSLIST=`ls -1A $BKPDEST | grep -v restores`
 BKPCOUNT=`ls -1A $BKPDEST| wc -l`
