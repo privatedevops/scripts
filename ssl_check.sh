@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #	Copyrights BGCODE LTD. - https://hostingidol.com
-#
+#	Nagios support added to the script, can be loaded to Nagios commands
 #
 
 clear
