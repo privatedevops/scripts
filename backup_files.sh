@@ -21,7 +21,7 @@ SSHPORT='SSH PORT HERE'
 
 
 echo "Deleting: $BKPDIR/$SRC/$DELFROM"
-if [ -d $BKPDIR/$SRC/$DAY14 ]; then
+if [ -d $BKPDIR/$SRC/$days ]; then
 	echo -e "Deleting backup from: $DELFROM"
 	rm -rf $BKPDIR/$SRC/$DELFROM
 fi
