@@ -1,5 +1,10 @@
 #!/bin/bash
-#clear
+#
+#	Copyrights BGCODE LTD. - https://hostingidol.com
+#
+#
+
+clear
 domain=$1
 sslport=$2
 
