@@ -1,4 +1,9 @@
 #!/bin/bash
+#
+# Created on 13 March 2017 by BGCODE LTD. a.k.a. HostingIDOL https://hostingidol.com
+#
+
+
 declare -x PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games"
 declare -x SHELL="/bin/bash"
 
