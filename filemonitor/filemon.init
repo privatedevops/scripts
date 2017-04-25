@@ -1,0 +1,64 @@
+#!/bin/bash
+. /etc/init.d/functions
+function startmon {
+	source /etc/init.d/functions
+	# EX. daemon cmd line
+	daemon --user funky nohup /home/funky/public_html/scripts/filemon -d >/dev/null 2>&1 &
+}
+
+# filemon daemon
+# description: filemon daemon
+# processname: filemon
+
+DAEMON_PATH="/home/funky/public_html/scripts/"
+
+DAEMON="filemon"
+DAEMONOPTS="-d"
+
+NAME="filemon"
+DESC="Funky user file mon doc(x) to odt converter daemon "
+SCRIPTNAME=/etc/init.d/$NAME
+LOCK_FILE="/var/run/$NAME.lock"
+
+
+case "$1" in
+start)
+	printf "%-50s" "Starting $NAME..."
+	cd $DAEMON_PATH
+	PID=`$DAEMON $DAEMONOPTS > /dev/null 2>&1 & echo $!`
+	#echo "Saving PID" $PID " to " $PIDFILE
+        if [ -f $LOCK_FILE ]; then
+            printf "%s\n" "Fail"
+        else
+  	    startmon
+	    touch $LOCK_FILE
+            printf "%s\n" "[Ok]"
+        fi
+;;
+status)
+        printf "%-50s" "Checking $NAME..."
+        if [ -f $LOCK_FILE ]; then
+                echo "Running"
+        else
+            printf "%s\n" "Service not running"
+        fi
+;;
+stop)
+		if [ -f $LOCK_FILE ]; then
+		        printf "Stopping $NAME"
+			ps axuf |grep -Ei "inotifywait" |grep -Ev "grep|init\.d"  | awk '{print $2}' | xargs kill -9  >/dev/null 
+			rm -f $LOCK_FILE
+		else
+			 printf "Service not running or lock file deleted."
+		fi
+;;
+
+restart)
+  	$0 stop
+  	$0 start
+;;
+
+*)
+        echo "Usage: $0 {status|start|stop|restart}"
+        exit 1
+esac
