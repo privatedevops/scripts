@@ -1,11 +1,17 @@
 #!/bin/bash
 . /etc/init.d/functions
 
-base_dir='/home/funky/public_html/scripts/'
+base_dir='/root/scripts/'
 shortname="odtmon"
 now=`date "+%d-%h-%Y %H:%M %Z"`
 logdir="$base_dir/logs"
 log="$logdir/$shortname.log"
+
+user="ADDUSERHERE"
+
+#path to monitor
+path="/home/$user/public_html/wp-content/uploads/resumes/resume_files/"
+
 
 BEEP="\x07"
 ESC="\x1b["
@@ -61,10 +67,6 @@ log_me "Checking for logging folder"
 if [ ! -d $logdir ]; then
 	mkdir -p $logdir
 fi
-
-
-
-path='/home/funky/public_html/search-job-abroad/wp-content/uploads/resumes/resume_files/'
 
 
 

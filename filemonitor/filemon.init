@@ -1,25 +1,32 @@
 #!/bin/bash
 . /etc/init.d/functions
-function startmon {
-	source /etc/init.d/functions
-	# EX. daemon cmd line
-	daemon --user funky nohup /home/funky/public_html/scripts/filemon -d >/dev/null 2>&1 &
-}
+
+
 
 # filemon daemon
 # description: filemon daemon
 # processname: filemon
 
-DAEMON_PATH="/home/funky/public_html/scripts/"
+USER="ADDUSERHERE"
 
-DAEMON="filemon"
+
+DAEMON="filemon-$USER"
 DAEMONOPTS="-d"
 
-NAME="filemon"
+NAME="filemon-$USER"
 DESC="Funky user file mon doc(x) to odt converter daemon "
 SCRIPTNAME=/etc/init.d/$NAME
 LOCK_FILE="/var/run/$NAME.lock"
 
+
+DAEMON_PATH="/home/$USER/scripts/"
+
+
+function startmon {
+        source /etc/init.d/functions
+        # EX. daemon cmd line
+        daemon --user $USER nohup /home/$USER/scripts/filemon -d >/dev/null 2>&1 &
+}
 
 case "$1" in
 start)
@@ -46,7 +53,7 @@ status)
 stop)
 		if [ -f $LOCK_FILE ]; then
 		        printf "Stopping $NAME"
-			ps axuf |grep -Ei "inotifywait" |grep -Ev "grep|init\.d"  | awk '{print $2}' | xargs kill -9  >/dev/null 
+			ps axuf | grep $USER | grep -Ei "inotifywait" |grep -Ev "grep|init\.d"  | awk '{print $2}' | xargs kill -9  >/dev/null 
 			rm -f $LOCK_FILE
 		else
 			 printf "Service not running or lock file deleted."
