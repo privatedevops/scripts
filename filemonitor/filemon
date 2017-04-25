@@ -1,13 +1,15 @@
 #!/bin/bash
 . /etc/init.d/functions
 
-base_dir='/root/scripts/'
+
+user="ADDUSERHERE"
+
+base_dir="/home/$user/scripts/"
 shortname="odtmon"
 now=`date "+%d-%h-%Y %H:%M %Z"`
 logdir="$base_dir/logs"
 log="$logdir/$shortname.log"
 
-user="ADDUSERHERE"
 
 #path to monitor
 path="/home/$user/public_html/wp-content/uploads/resumes/resume_files/"
