@@ -57,7 +57,7 @@ now=`date "+%d-%h-%Y %H:%M %Z"`
 logdir="$base_dir/logs"
 log="$logdir/$shortname.log"
 
-#global vars
+#main IP of the account
 ipaddress='107.170.104.183'
 
 vlistdomains=$(/usr/local/vesta/bin/v-list-web-domains $vestauser | awk '{print $1}' | grep '\.')
@@ -121,21 +121,21 @@ if ( ! echo -e "$listips" | grep -Eiq ^"$ipaddress"$  ); then
 	fatal_error "IP address - $ipaddress is not active on this host"
 fi
 
-#checking if the new domain is pointed to our server
-#log_me "checking if the new domain - $newdomain is already pointed to our server"
-#if ( ! $(host $newdomain | grep 'address' | awk '{print $4}' | grep -Ei "^$ipaddress$") ); then
-#	fatal_error "The $newdomain is not yet pointed to $ipaddress, please fix and restart the process"
-#fi
-
 #adding domain
 log_me "adding domain $newdomain"
 if ( ! /usr/local/vesta/bin/v-add-domain $vestauser $newdomain $ipaddress restart ); then
 	fatal_error "Unable to add $newdomain, please report to your sysadmin"
 fi
 
+#checking if the new domain is pointed to our server
+#log_me "checking if the new domain - $newdomain is already pointed to our server"
+#if ( ! host $newdomain | grep 'address' | awk '{print $4}' | grep -Eiq ^"$ipaddress"$ ); then
+#	fatal_error "The $newdomain is not yet pointed to $ipaddress, please fix and restart the process"
+#fi
+
 #generating letsencrypt SSL
 #log_me "adding LetsEncrypt SSL for $newdomain"
-#if ( ! $(/usr/local/vesta/bin/v-add-letsencrypt-domain $vestauser $newdomain "www."$newdomain restart) ); then
+#if ( ! /usr/local/vesta/bin/v-add-letsencrypt-domain $vestauser $newdomain "www."$newdomain no ); then
 #	fatal_error "Unable to add free LetsEncrypt SSL for $newdomain, please report to your sysadmin"
 #fi
 
@@ -186,9 +186,3 @@ log_me "Fixing $newdomainroot ownerships"
 if ( !  chown "$vestauser":  $newdomainroot -R ); then
 	fatal_error "Unable to fix $newdomainroot ownerships"
 fi
-
-
-
-
-
-
