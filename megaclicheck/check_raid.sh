@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Author: stanislav@bgcode.com
+# https://hostingidol.com
 
 base_dir='/root/scripts/megaclicheck'
 shortname="raid_checker"
