@@ -3,7 +3,6 @@
 
 base_dir='/root/scripts/megaclicheck'
 shortname="raid_checker"
-host='31.3.243.114'
 now=`date "+%d-%h-%Y %H:%M %Z"`
 logdir="/var/log/"
 log="$logdir/$shortname.log"
