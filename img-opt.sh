@@ -109,7 +109,7 @@ while read -r img; do
 	                log_me "Marker is missing, optimizing - $img - $marker"
 			log_me "Converting img quality to 80% with convert tool"
 			
-			echo -e "convert $img  -quality 80 -strip -interlace Plane $img" | sh
+			echo -e "convert $img -sampling-factor 4:2:0 -strip -quality 80 -interlace JPEG -strip -interlace Plane $img" | sh
 
 			log_me "Removing meta info with jpegoptim"
 			JPEGOPTIM=$(echo $img | jpegoptim --strip-all)
