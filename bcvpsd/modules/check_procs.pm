@@ -29,7 +29,7 @@ sub maxproc {
 	our $max_php = 255;
 	our $max_dovecot=255555;
 
-	my $pattern_php='/usr/bin/php';
+	my $pattern_php='php';
 	my $pattern_dovecot='dovecot';
 
 	our $php_lines=0;
