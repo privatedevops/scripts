@@ -2,9 +2,12 @@
 package check_headers;
 use strict;
 use warnings;
+use feature 'say';
+
+use HTTP::Tiny;
+
 use base 'Exporter';
 use Fcntl;
-require  LWP::UserAgent;
 
 our @ISA        = qw(Exporter);
 our @EXPORT = qw(header_status);
@@ -16,25 +19,22 @@ __PACKAGE__->header_status() unless caller;
 
 
 sub header_status {
-#	my @urls = ('http://www.bgcode.com/',  'http://www.uzdp.bg/bg');
-	my @urls = ('http://www.shop2bg.com');
+        my $Client = HTTP::Tiny->new();
 
-	my $ua = LWP::UserAgent->new;
-	for my $url (@urls)
-	{
-		print $url;
-	    $ua->agent('BGCODE Ltd. web status checker');
-		my $response = $ua->get($url);
-		$ua->timeout(30);
-		$ua->env_proxy;
-		$ua->max_redirect(0);
-		if ($response->is_success) {
-			print " - \n".$response->status_line;
-			next ;
-		} else {
-			system("/usr/local/sbin/9");
-			return 1;
-		            die $response->status_line;
-		}
-	}
+        my @urls = (
+                'https://www.bgcode.com/bg/',
+                'https://hostingidol101.com',
+        );
+
+        for my $url (@urls) {
+                my $response = $Client->get($url);
+                my $http_status = HTTP::Tiny->new(max_redirect => 0)->get("$url")->{status};
+                if ( $http_status != 200) {
+#                       print "problem";
+                        return 1;
+                }
+#               } else {
+#                       print print "$url - $http_status\n";
+#               }
+        }
 }
