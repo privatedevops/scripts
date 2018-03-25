@@ -31,6 +31,7 @@ sub header_status {
                 my $http_status = HTTP::Tiny->new(max_redirect => 0)->get("$url")->{status};
                 if ( $http_status != 200) {
 #                       print "problem";
+			system("/usr/local/sbin/9");
                         return 1;
                 }
 #               } else {
