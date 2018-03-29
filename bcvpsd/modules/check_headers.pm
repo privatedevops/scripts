@@ -13,6 +13,8 @@ our @ISA        = qw(Exporter);
 our @EXPORT = qw(header_status);
 our $VERSION    = 1.0;
 
+our $url = shift;
+our $urlissue   = $url;
 
 # executes at run-time, unless used as module
 __PACKAGE__->header_status() unless caller;
