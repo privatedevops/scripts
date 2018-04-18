@@ -8,3 +8,4 @@ chmod 0600 /var/$SWAPNAME
 mkswap /var/$SWAPNAME
 swapon /var/$SWAPNAME
 echo "/$SWAPNAME none swap sw 0 0" >> /etc/fstab
+swapon -s
