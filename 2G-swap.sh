@@ -2,7 +2,7 @@
 
 SWAPNAME='.swap1'
 
-dd if=/dev/zero of=/var/$SWAPNAME bs=1024 count=4194304
+dd if=/dev/zero of=/var/$SWAPNAME bs=1024 count=2097152
 chown root:root /var/$SWAPNAME
 chmod 0600 /var/$SWAPNAME
 mkswap /var/$SWAPNAME
