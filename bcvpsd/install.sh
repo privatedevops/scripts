@@ -8,9 +8,9 @@ fi
 
 if [ -f /etc/centos-release ];then
     distro=centos
-    yum install -y cpan
+    yum install -y cpan perl-LWP-Protocol-https
 fi
 
 
 export PERL_MM_USE_DEFAULT=1
-cpan install File::Pid Sys::Load Proc::ProcessTable LWP::UserAgent
+cpan install File::Pid Sys::Load Proc::ProcessTable LWP::UserAgent HTTP::Tiny
