@@ -6,12 +6,12 @@
 BACKUP_DIR=/root/pgsql
 DAYS_TO_KEEP=14
 FILE_SUFFIX=_pg_backup.sql
+
+PASSWORD=''
 USER=postgres
 
-#Do not change the name of pass var !
-PASSWORD='pgdb123@Tte3ssrv'
 
-HOST='db.qliker.io'
+HOST=''
 
 DBS=$(PGPASSWORD=${PASSWORD} psql -w -h ${HOST} -U postgres -lAt | gawk -F\| '$1 !~ /^template/ && $1 !~ /^postgres/ && NF > 1 {print $1}')
 
