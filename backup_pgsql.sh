@@ -5,7 +5,6 @@
 
 BACKUP_DIR=/root/pgsql
 DAYS_TO_KEEP=14
-FILE_SUFFIX=_pg_backup.sql
 
 PASSWORD=''
 USER=postgres
@@ -19,6 +18,7 @@ DBS=$(PGPASSWORD=${PASSWORD} psql -w -h ${HOST} -U postgres -lAt | gawk -F\| '$1
 for DATABASE in $DBS
 do
 	echo -e "Backuping: ${DATABASE}"
+	FILE_SUFFIX=_${DATABASE}.sql
 	FILE=`date +"%Y%m%d%H%M%S"`${FILE_SUFFIX}
 
 	OUTPUT_FILE=${BACKUP_DIR}/${FILE}
