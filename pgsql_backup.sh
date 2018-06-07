@@ -19,7 +19,7 @@ DBS=$(PGPASSWORD=${PASSWORD} psql -w -h ${HOST} -U postgres -lAt | gawk -F\| '$1
 for DATABASE in $DBS
 do
 	echo -e "Backuping: ${DATABASE}"
-	FILE=`date +"%Y%m%d%H%M"`${FILE_SUFFIX}
+	FILE=`date +"%Y%m%d%H%M%S"`${FILE_SUFFIX}
 
 	OUTPUT_FILE=${BACKUP_DIR}/${FILE}
 
@@ -35,9 +35,9 @@ do
 	# gzip the mysql database dump file
 	gzip $OUTPUT_FILE
 
-	# show the user the result
-	echo "${OUTPUT_FILE}.gz was created:"
-	ls -l ${OUTPUT_FILE}.gz
+	# DEBUG show the user the result
+	#echo "${OUTPUT_FILE}.gz was created:"
+	#ls -l ${OUTPUT_FILE}.gz
 
 	# prune old backups
 	find $BACKUP_DIR -maxdepth 1 -mtime +$DAYS_TO_KEEP -name "*${FILE_SUFFIX}.gz" -exec rm -rf '{}' ';'
