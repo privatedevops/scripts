@@ -86,7 +86,7 @@ while read -r img; do
 	if [[ "$imgtype" == 'PNG' ]]; then
 		type='PNG'
                 if [[ $tag == $marker ]]; then
-                        log_me "Richter marker found, skipting image - $img"
+                        log_me "HostingIDOL.com marker found, skipting image - $img"
                         continue;
                 else
                         log_me "Marker is missing, optimizing - $img - Marker: $tag"
