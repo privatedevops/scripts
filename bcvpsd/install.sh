@@ -9,7 +9,7 @@ fi
 
 if [ -f /etc/centos-release ];then
     distro=centos
-    yum install -y cpan perl-LWP-Protocol-https perl-IO-Socket-SSL
+    yum install -y cpan perl-LWP-Protocol-https perl-IO-Socket-SSL cpan
 fi
 
 export PERL_MM_USE_DEFAULT=1
