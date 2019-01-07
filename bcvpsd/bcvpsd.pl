@@ -16,6 +16,7 @@ use check_load;
 use check_smtpfw;
 #use brute_force;
 use check_procs;
+use check_memory;
 
 # make "mydaemon.log" file in /var/log/ with "chown root:adm mydaemon"
 
@@ -95,6 +96,15 @@ until ($dieNow) {
 			$result="[OK] Load is OK - Load: $check_load::cur_load";
 			logEntry_nomail();
 		}
+                # check for freemem
+                if (check_memory->memavg() == 1 ){
+                        $result="[Error] The server has low memory - Free RAM: $check_memory::freememory MB";
+                        logEntry();
+                        $alarm++;
+                } else {
+                        $result="[OK] RAM usage is OK - Free RAM: $check_memory::freememory MB";
+                        logEntry_nomail();
+                }
 		# check for broken dbs
 		if (check_mysql->broken_db() == 1 ){
 			$result="[Error] MySQL Not OK - Broken DBs detected";
