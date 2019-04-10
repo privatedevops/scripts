@@ -13,4 +13,4 @@ if [ -f /etc/centos-release ];then
 fi
 
 export PERL_MM_USE_DEFAULT=1
-cpan File::Pid Sys::Load Proc::ProcessTable LWP::UserAgent HTTP::Tiny Sys::MemInfo
+cpan File::Pid Sys::Load Proc::ProcessTable LWP::UserAgent HTTP::Tiny Sys::MemInfo  File::Slurp IO::Socket::SSL
