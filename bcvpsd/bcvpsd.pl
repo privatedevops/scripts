@@ -5,7 +5,11 @@ use strict;
 use warnings;
 use POSIX;
 use File::Pid;
-
+use File::Slurp;
+use Sys::Hostname;
+use Socket;
+my($addr)=inet_ntoa((gethostbyname(hostname))[4]);
+#print "$addr\n";
 
 #require  "/root/scripts/check_mysql.pm";
 use lib "/root/scripts/bcvpsd/modules/";
@@ -18,6 +22,8 @@ use check_smtpfw;
 #use brute_force;
 use check_procs;
 use check_memory;
+
+
 
 # make "mydaemon.log" file in /var/log/ with "chown root:adm mydaemon"
 
@@ -34,6 +40,11 @@ my $pidFile       = $pidFilePath . $daemonName . ".pid";
 
 
 $ENV{'PATH'} = '/sbin:/usr/sbin:/bin:/usr/bin:/usr/local/sbin:/usr/local/bin';
+
+
+#Slack notifications
+my $hookinurl='SLACK_HOOKURL_HERE';
+
 
 # daemonize
 use POSIX qw(setsid);
@@ -184,6 +195,7 @@ until ($dieNow) {
 		my $dateTime = sprintf "%4d-%02d-%02d %02d:%02d:%02d", $year + 1900, $mon + 1, $mday, $hour, $min, $sec;
 		if ($logging) {
 			print LOG "$dateTime $result\n";
+ 			`curl -X POST --data-urlencode \'payload={"channel": "#alerts", "text": "INFO: / ($addr) $hostname - $result"}\' $hookinurl`;
 			notification();
 		}
 	}
