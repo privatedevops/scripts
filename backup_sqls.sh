@@ -41,7 +41,7 @@ for server in $SRC; do
         fi
         for db in $DBS; do
                 echo -e "Starting SQL backups for db $db from server: $server"
-                ionice -c2 -n7 ssh -p $SSHPORT root@$server "mysqldump --events --skip-lock-tables $db" | /usr/bin/bzip2 > $TRG/$db-$CURDATE.bz2
+                ionice -c2 -n7 ssh -p $SSHPORT root@$server "mysqldump --single-transaction=TRUE --skip-add-locks --events --skip-lock-tables $db" | /usr/bin/bzip2 > $TRG/$db-$CURDATE.bz2
         done
 
 

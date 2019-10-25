@@ -12,7 +12,7 @@ fi
 
 for db in `mysql -e 'show databases' | grep -Ev "$EXCLUDE"`; do 
 	echo -e "Dumping MySQL DB: $db"
-	mysqldump --events $db | gzip > $DESTINATION/$db.$CURDATE.sql.gz
+	mysqldump --single-transaction=TRUE --skip-add-locks --events $db | gzip > $DESTINATION/$db.$CURDATE.sql.gz
 done
 
 #keep only last 24 hours backups
