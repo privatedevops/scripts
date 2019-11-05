@@ -3,7 +3,7 @@
 if [ -f /etc/debian_version ]; then
     distro=debian
     apt update
-    apt install perl perl-base libio-socket-ssl-perl  -y
+    apt install make perl perl-base libio-socket-ssl-perl  libdbd-mysql-perl libfile-pid-perl libproc-pid-file-perl libyaml-perl libsys-meminfo-perl liblwp-useragent-chicaching-perl  libsys-statistics-linux-perl -y
 	
 fi
 
