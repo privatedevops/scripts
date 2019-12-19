@@ -103,7 +103,7 @@ while read -r img; do
 	elif [[ "$imgtype" == 'JPEG' ]]; then
 		type='JPEG'
 	        if [[ $tag == $marker ]]; then
-			log_me "Richter marker found, skipting image - $img"
+			log_me "Marker found, skipting image - $img"
 			continue;
 		else
 	                log_me "Marker is missing, optimizing - $img - $marker"
