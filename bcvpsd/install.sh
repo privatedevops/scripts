@@ -9,7 +9,8 @@ fi
 
 if [ -f /etc/centos-release ];then
     distro=centos
-    yum install -y cpan perl-LWP-Protocol-https perl-IO-Socket-SSL perl-Proc-ProcessTable perl-YAML perl-YAML* gcc g++ cc perl-File-Pid perl-DBD-MySQL perl-File-Slurp make
+    yum install -y cpan perl-LWP-Protocol-https perl-IO-Socket-SSL perl-Proc-ProcessTable perl-YAML perl-YAML* gcc g++ cc perl-File-Pid perl-DBD-MySQL perl-File-Slurp make perl-CPANPLUS.x86_64  perl-CPAN.x86_64
+
 fi
 
 export PERL_MM_USE_DEFAULT=1
