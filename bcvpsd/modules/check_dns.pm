@@ -30,8 +30,8 @@ sub dns {
 		recurse => 1,
 #		debug => 1,
 	);
-    $res->defnames(0);
-    $res->retry(2);
+	$res->defnames(0);
+	$res->retry(2);
 
 	$res->nameservers($name_server);
 	my $query = $res->search($hostname);
