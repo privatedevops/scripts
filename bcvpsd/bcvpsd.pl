@@ -22,6 +22,7 @@ use check_smtpfw;
 #use brute_force;
 use check_procs;
 use check_memory;
+use check_dns;
 
 
 
@@ -137,6 +138,15 @@ until ($dieNow) {
 			$result="[OK] MySQL is UP";
 			logEntry_nomail();
 		}
+                # check for DNS
+                if (check_dns->dns() == 1 ){
+                        $result="[Error] DNS is not working!";
+                        logEntry();
+                        $alarm++;
+                } else {
+                        $result="[OK] DNS resolve is OK";
+                        logEntry_nomail();
+                }
 		#check if 25 port tcp is blocked by iptables
 		if (check_smtpfw->check_smtpfw() == 1 ){
 			$result="[Error] SMTP DROP or REJECT rules found, firewall restarted.";
