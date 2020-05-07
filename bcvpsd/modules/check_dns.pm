@@ -26,7 +26,7 @@ sub dns {
 	my $hostname = 'mydomain.com';
 
 	my $res = Net::DNS::Resolver->new(
-		 timeout => 5,
+		timeout => 5,
 		recurse => 1,
 #		debug => 1,
 	);
