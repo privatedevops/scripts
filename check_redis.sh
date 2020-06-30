@@ -15,10 +15,10 @@ if (! $REDISCLI -h $REDISHOST -a $RPASSWORD PING >> /dev/null ); then
 	
 	if (! systemctl restart redis-server ); then
 		echo "[$HOSTNAME] Redis restarted on $HOSTNAME"
-		curl -X POST --data-urlencode 'payload={"channel": "#urgent", "text": "[$HOSTNAME] Unable to start redis"}' $SLACKHOOKURL
+		curl -X POST --data-urlencode 'payload={"channel": "#urgent", "text": "['"$HOSTNAME"'] Unable to start redis"}' $SLACKHOOKURL
 		
 	else
 		echo "[$HOSTNAME] redis restarted"
-		curl -X POST --data-urlencode 'payload={"channel": "#urgent", "text": "[$HOSTNAME] redis restarted"}' $SLACKHOOKURL
+		curl -X POST --data-urlencode 'payload={"channel": "#urgent", "text": "['"$HOSTNAME"'] redis restarted"}' $SLACKHOOKURL
 	fi
 fi
