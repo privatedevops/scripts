@@ -87,7 +87,7 @@ function log_me {
 function fatal_error {
 	echo -e "$RED[$WHITE!$RED]$WIHTE FATAL ERROR:$RED $@$RESET$BEEP"
 	echo -e "[$now] REPLICATION ERROR: $@" >> $log
-	tail -n 10 $log | mail -s "MySQL Replication between Master: $host and Slave: $slaveip not OK, trying repair." sanek@slacklinux.net
+	tail -n 10 $log | mail -s "Can't Clone WP." sanek@slacklinux.net
 	echo -e "The error has been reported to: stanislav@bgcode.com\n"
 	exit 1;
 }
