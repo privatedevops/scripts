@@ -69,9 +69,8 @@ fi
 
 # if magento 2
 if [ -f ./composer.json  ]; then
-	echo -e "It is Magento 2 installation"
 	if (grep -q 'magento/product-community-edition' ./composer.json); then
-		echo -e "magento/product-community-edition version detected !"
+		log_me "magento/product-community-edition version detected !"
 		MGVERSION=$(grep 'magento/product-community-edition' ./composer.json | awk -F '"' '{print $4}' )
 	else
 		MGVERSION=$(grep '\"version\"' ./composer.json  | awk -F '"' '{print $4}')
