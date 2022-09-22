@@ -51,7 +51,8 @@ case "$1" in
 
     do
 
-      faulty=$(mdadm -D $raid | grep faulty)
+#      faulty=$(mdadm -D $raid | grep faulty)
+      faulty=$(mdadm -D $raid | grep -Ei 'faulty|degraded|removed')
 
       if [[ $faulty ]]
         then
