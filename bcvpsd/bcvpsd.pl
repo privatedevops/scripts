@@ -23,6 +23,7 @@ use check_smtpfw;
 use check_procs;
 use check_memory;
 use check_dns;
+use check_elasticsearch;
 
 
 
@@ -93,6 +94,15 @@ until ($dieNow) {
 	if (not defined $pid) {
 		print "resources not avilable.\n";
 	} elsif ($pid == 0) {
+                #check ELS
+                if (check_elasticsearch->els_status() == 1 ){
+                        $result="[Error] ElasticSearch status problem.";
+                        logEntry();
+                        $alarm++;
+                } else {
+                        $result="[OK] ElasticSearch is UP";
+                        logEntry_nomail();
+                }
 		#check web headers
 		if (check_headers->header_status() == 1 ){
 			$result="[Error] Header status problem - Main Website is DOWN";
