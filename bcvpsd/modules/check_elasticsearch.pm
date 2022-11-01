@@ -16,7 +16,7 @@ our $url = shift;
 our $urlissue   = $url;
 
 # executes at run-time, unless used as module
-__PACKAGE__->header_status() unless caller;
+__PACKAGE__->els_status() unless caller;
 
 
 sub els_status {
