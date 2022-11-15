@@ -3,13 +3,13 @@
 if [ -f /etc/debian_version ]; then
     distro=debian
     apt update
-    apt install make perl perl-base libio-socket-ssl-perl  libdbd-mysql-perl libfile-pid-perl libproc-pid-file-perl libyaml-perl libsys-meminfo-perl liblwp-useragent-chicaching-perl  libsys-statistics-linux-perl libio-socket-ssl-perl libfile-slurper-perl libfile-slurp-perl libsys-meminfo-perl -y
+    apt install gcc make perl perl-base libio-socket-ssl-perl  libdbd-mysql-perl libfile-pid-perl libproc-pid-file-perl libyaml-perl libsys-meminfo-perl liblwp-useragent-chicaching-perl  libsys-statistics-linux-perl libio-socket-ssl-perl libfile-slurper-perl libfile-slurp-perl libsys-meminfo-perl -y
 	
 fi
 
 if [ -f /etc/centos-release ];then
     distro=centos
-    yum install -y cpan perl-LWP-Protocol-https perl-IO-Socket-SSL perl-Proc-ProcessTable perl-YAML perl-YAML* gcc g++ cc perl-File-Pid perl-DBD-MySQL perl-File-Slurp make perl-CPANPLUS  perl-CPAN perl-Net-DNS
+    yum install -y gcc cpan perl-LWP-Protocol-https perl-IO-Socket-SSL perl-Proc-ProcessTable perl-YAML perl-YAML* gcc g++ cc perl-File-Pid perl-DBD-MySQL perl-File-Slurp make perl-CPANPLUS  perl-CPAN perl-Net-DNS
 
 fi
 
