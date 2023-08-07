@@ -1,6 +1,7 @@
 #!/bin/bash
 
 
+
 cfipranges='https://www.cloudflare.com/ips-v4'
 
 for range in `curl -s $cfipranges` ; do 

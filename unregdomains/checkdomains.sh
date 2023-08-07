@@ -23,11 +23,11 @@ echo "Results will be saved in $file"
 #for adr in {a..z}{a..z}{a..z} {a..z}{a..z}{a..z}{a..z}
 for adr in $(cat ./list)
 do
-    name="$adr.com"
+    name="$adr.ai"
     printf "Checking %s ...\r" "$name"
     r=$(get_answers_number "$name")
     if ((r==0)); then
-	./cdom.sh $adr.com | grep AVAILABLE >> ./unregistered.txt
+	./cdom.sh $adr.ai | grep AVAILABLE >> ./unregistered.txt
 	sleep 2s;
     fi
 
