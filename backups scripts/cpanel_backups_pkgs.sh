@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 
 mail='setmailhere@toanydomain.com'
 cp_accs=`cat /etc/userdomains | awk '{print $2}' | sort | uniq | grep -v nobody`

@@ -1,5 +1,7 @@
 #!/bin/bash
-
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 
 #Website Backup Script
 HOSTNAME=`/bin/hostname`

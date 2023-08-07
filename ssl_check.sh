@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-#	Copyrights BGCODE LTD. - https://hostingidol.com
-#	Nagios support added to the script, can be loaded to Nagios commands
+#	Copyrights Private Devops LTD. - https://privatedevops.com
 #
 
 clear

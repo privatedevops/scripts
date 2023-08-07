@@ -1,5 +1,7 @@
 #!/bin/bash
-
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 
 BEEP="\x07"
 ESC="\x1b["

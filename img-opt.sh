@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 
 base_dir="/root/scripts"
 shortname="opti-img"
@@ -7,7 +10,7 @@ now=$(date "+%d-%h-%Y %H:%M %Z")
 logdir="$base_dir/logs"
 log="$logdir/$shortname.log"
 user=username
-marker='hostingidol.com'
+marker='privatedevops.com'
 
 BEEP="\x07"
 ESC="\x1b["

@@ -1,5 +1,8 @@
 #!/bin/bash
 #
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
+#
 # Usage: sqlbackup.sh [ backup/backup cron; restore/restore replaceall ]
 #
 # xtrabckups.sh backup

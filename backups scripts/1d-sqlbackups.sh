@@ -1,5 +1,7 @@
 #!/bin/bash
-
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 
 EXCLUDE="'Database|Database|information\_schema|performance\_schema|Database'"
 DESTINATION=/root/sql/

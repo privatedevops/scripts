@@ -2,6 +2,9 @@
 #
 # Backup a Postgresql database into a daily file.
 #
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 
 BACKUP_DIR=/root/pgsql
 DAYS_TO_KEEP=14

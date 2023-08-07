@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 
 MYSQL_PWD=`cat /etc/psa/.psa.shadow`
 EXCLUDE="'Database|Database|information\_schema|performance\_schema|Database'"

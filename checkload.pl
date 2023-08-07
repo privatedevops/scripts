@@ -1,4 +1,8 @@
 #!/usr/bin/perl
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
+
 use Proc::Simple;
 
 $myproc = Proc::Simple->new();

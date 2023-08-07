@@ -1,5 +1,7 @@
 #!/bin/bash
-
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 
 
 cfipranges='https://www.cloudflare.com/ips-v4'

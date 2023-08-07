@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 
 #Website Backup Script
 HOSTNAME=`/bin/hostname`
@@ -18,7 +21,7 @@ DELFROM=`date -I -d "$days days ago"`
 BKPDIR="/backups/files/"
 SKIPFILES="/root/scripts/bkp_excludes.list"
 
-SRC="163.172.70.21"
+SRC="IP,HOST,IP2,IP2,HOST2"
 
 SSHPORT='5698'
 

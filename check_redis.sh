@@ -1,4 +1,7 @@
 #!/bin/bash
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 
 REDISCLI='/usr/bin/redis-cli'
 

@@ -1,6 +1,9 @@
 #!/bin/bash
 #
 # WordPress duplicator Tool for Vesta Panel 
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 # 
 #
 

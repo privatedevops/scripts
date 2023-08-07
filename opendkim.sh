@@ -1,5 +1,7 @@
 #!/bin/bash
-
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
 domain=$1
 dkfolder="/etc/opendkim/"
 
