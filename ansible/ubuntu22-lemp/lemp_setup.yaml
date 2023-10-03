@@ -1,3 +1,12 @@
+#!/bin/bash
+#
+#       Copyrights Private Devops LTD. - https://privatedevops.com
+#
+
+
+
+
+
 ---
 - hosts: 65.109.170.234
   become: yes
