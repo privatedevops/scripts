@@ -6,7 +6,7 @@
 
 
 ---
-- hosts: 65.109.170.234
+- hosts: _SERVER_IP_
   become: yes
   gather_facts: yes
 
