@@ -1,0 +1,305 @@
+---
+- hosts: 65.109.170.234
+  become: yes
+  gather_facts: yes
+
+  vars:
+    DOMAIN: _DOMAIN_NAME_
+    USERNAME: __SYSTEM_USERNAME_
+    HOME_FOLDER: /home/{{ USERNAME }}
+
+    MYSQL_ROOT_PASS: _ROOT_PASSWORD_
+    mysql_db_name: db1_{{ USERNAME }}
+    mysql_db_user: usr1_{{ USERNAME }}
+    mysql_db_password: __PASSWORD_FOR_THE_USER_
+
+
+    SWAP_PATH: /.swapfile1
+    SWAP_SPACE: 2G  
+
+    FPM_POOL_TCP: 9081
+    PHP_VERSION: php8.1
+    PHP_EXTENSIONS:
+      - imap
+      - redis
+      - amqp
+      - cli
+      - mysql
+      - zip
+      - gmp
+      - fpm
+      - pgsql
+      - soap
+      - intl
+      - mbstring
+      - xml
+      - gd
+      - curl
+      - bcmath
+      - msgpack
+      - readline
+      - common
+      - imagick
+
+  tasks:
+    - name: Check swap space
+      shell: "free -m | grep Swap | awk '{ print $2 }'"
+      register: swap_size
+      changed_when: false
+      ignore_errors: yes
+
+    - name: Create 2GB swap if not present
+      shell: "fallocate -l {{ SWAP_SPACE }} {{ SWAP_PATH }} && chmod 600 {{ SWAP_PATH }} && mkswap {{ SWAP_PATH }} && swapon {{ SWAP_PATH }}"
+      when: swap_size.stdout == "0"
+
+    - name: Add swap entry to /etc/fstab
+      lineinfile:
+        path: /etc/fstab
+        line: "{{ SWAP_PATH }} swap swap defaults 0 0"
+      when: swap_size.stdout == "0"
+      notify: Reload sysctl
+
+    # Truncate the existing sysctl configuration file
+    - name: Truncate sysctl configuration file
+      copy:
+        content: ""
+        dest: /etc/sysctl.conf
+      become: yes
+
+    - name: Set sysctl parameters
+      sysctl:
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+      loop:
+        - { name: "net.ipv4.tcp_tw_reuse", value: "1" }
+        - { name: "net.core.somaxconn", value: "2048" }
+        - { name: "net.ipv6.conf.all.disable_ipv6", value: "1" }
+        - { name: "net.ipv6.conf.default.disable_ipv6", value: "1" }
+        - { name: "net.ipv6.conf.lo.disable_ipv6", value: "1" }
+        - { name: "vm.min_free_kbytes", value: "327680" }
+        - { name: "vm.vfs_cache_pressure", value: "125" }
+        - { name: "vm.dirty_ratio", value: "10" }
+        - { name: "vm.dirty_background_ratio", value: "10" }
+        - { name: "vm.overcommit_memory", value: "1" }
+        - { name: "vm.swappiness", value: "10" }
+        - { name: "net.ipv4.icmp_echo_ignore_broadcasts", value: "1" }
+        - { name: "net.ipv4.icmp_ignore_bogus_error_responses", value: "1" }
+        - { name: "net.ipv4.tcp_syncookies", value: "1" }
+        - { name: "net.ipv4.conf.all.log_martians", value: "1" }
+        - { name: "net.ipv4.conf.default.log_martians", value: "1" }
+        - { name: "net.ipv4.conf.all.accept_source_route", value: "0" }
+        - { name: "net.ipv4.conf.default.accept_source_route", value: "0" }
+        - { name: "net.ipv4.conf.all.rp_filter", value: "1" }
+        - { name: "net.ipv4.conf.default.rp_filter", value: "1" }
+        - { name: "net.ipv4.conf.all.accept_redirects", value: "0" }
+        - { name: "net.ipv4.conf.default.accept_redirects", value: "0" }
+        - { name: "net.ipv4.conf.all.secure_redirects", value: "0" }
+        - { name: "net.ipv4.conf.default.secure_redirects", value: "0" }
+        - { name: "net.ipv4.ip_forward", value: "1" }
+        - { name: "net.ipv4.conf.all.send_redirects", value: "0" }
+        - { name: "net.ipv4.conf.default.send_redirects", value: "0" }
+        - { name: "kernel.randomize_va_space", value: "1" }
+        - { name: "net.ipv4.ip_local_port_range", value: "1024 65000" }
+        - { name: "net.ipv4.tcp_rmem", value: "4096 87380 8388608" }
+        - { name: "net.ipv4.tcp_wmem", value: "4096 87380 8388608" }
+        - { name: "net.core.rmem_max", value: "8388608" }
+        - { name: "net.core.wmem_max", value: "8388608" }
+        - { name: "net.core.netdev_max_backlog", value: "5000" }
+        - { name: "net.ipv4.tcp_window_scaling", value: "1" }
+
+    - name: Reload sysctl
+      command: "sysctl -p"
+      become: yes
+
+    - name: Create {{ USERNAME }} user
+      user:
+        name: "{{ USERNAME }}"
+        shell: /bin/bash
+        home: "{{ HOME_FOLDER }}"
+      become: yes
+      # Create the user
+
+    - name: Create home folder for {{ USERNAME }}
+      file:
+        path: "{{ HOME_FOLDER }}"
+        state: directory
+        owner: "{{ USERNAME }}"
+        group: "{{ USERNAME }}"
+        mode: '0755'
+      become: yes
+      # Ensure the home folder is created
+
+    - name: Create web folder
+      file:
+        path: "{{ HOME_FOLDER }}/web/{{ DOMAIN }}"
+        state: directory
+        owner: "{{ USERNAME }}"
+        group: "{{ USERNAME }}"
+        mode: '0755'
+      become: yes
+
+    - name: Create logs folder
+      file:
+        path: "{{ HOME_FOLDER }}/web/{{ DOMAIN }}/logs"
+        state: directory
+        owner: "{{ USERNAME }}"
+        group: "{{ USERNAME }}"
+        mode: '0755'
+      become: yes
+      # Create the logs folder
+
+    - name: Create public_html folder
+      file:
+        path: "{{ HOME_FOLDER }}/web/{{ DOMAIN }}/public_html"
+        state: directory
+        owner: "{{ USERNAME }}"
+        group: "{{ USERNAME }}"
+        mode: '0755'
+      become: yes
+      # Create the public_html folder
+
+    - name: Update package cache
+      apt:
+        update_cache: yes
+      become: yes
+
+    - name: Install python3-mysqldb package
+      apt:
+        name: python3-mysqldb
+        state: present
+      become: yes
+
+    - name: Install MySQL 8
+      apt:
+        name: mysql-server
+        state: present
+      become: yes
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+      become: yes
+
+    - name: Update package cache (before installing PHP extensions)
+      apt:
+        update_cache: yes
+      become: yes
+
+    - name: Install PHP and PHP-FPM extensions
+      apt:
+        name: "{{ PHP_VERSION }}-{{ item }}"
+        state: present
+      become: yes
+      with_items: "{{ PHP_EXTENSIONS }}"
+
+    - name: Modify PHP settings
+      command: >
+        sed -i -e '/^[^;]*upload_max_filesize/ s/^\s*upload_max_filesize\s*=.*/upload_max_filesize = 256M/' \
+              -e '/^[^;]*post_max_size/ s/^\s*post_max_size\s*=.*/post_max_size = 256M/' \
+              -e '/^[^;]*memory_limit/ s/^\s*memory_limit\s*=.*/memory_limit = 512M/' \
+              -e '/^[^;]*max_input_vars/ s/^\s*max_input_vars\s*=.*/max_input_vars = 16000/' \
+              -e '/^[^;]*max_input_time/ s/^\s*max_input_time\s*=.*/max_input_time = 600/' \
+              -e '/^[^;]*max_execution_time/ s/^\s*max_execution_time\s*=.*/max_execution_time = 600/' \
+              /etc/php/{{ PHP_VERSION | regex_replace('^php', '') }}/fpm/php.ini
+      become: yes
+      changed_when: false
+
+    - name: Wait for MySQL to start
+      wait_for:
+        host: localhost
+        port: 3306
+        state: started
+      become: yes
+
+    - name: Create /root/.my.cnf file
+      copy:
+        content: |
+          [client]
+          user=root
+          password={{ MYSQL_ROOT_PASS }}
+        dest: /root/.my.cnf
+        mode: '0600'
+      become: yes
+
+    - name: Create MySQL database
+      command: |
+        mysql -u root -p{{ MYSQL_ROOT_PASS }} -e "CREATE DATABASE IF NOT EXISTS {{ mysql_db_name }};"
+      register: create_db
+      changed_when: create_db.stdout.find('exists') == -1
+      failed_when: create_db.rc != 0
+      ignore_errors: yes
+
+    - name: Create MySQL user
+      command: |
+        mysql -u root -p{{ MYSQL_ROOT_PASS }} -e "CREATE USER '{{ mysql_db_user }}'@'localhost' IDENTIFIED BY '{{ mysql_db_password }}';"
+      register: create_user
+      changed_when: create_user.stdout.find('already exists') == -1
+      failed_when: create_user.rc != 0
+      ignore_errors: yes
+
+    - name: Grant all privileges to MySQL user
+      command: |
+        mysql -u root -p{{ MYSQL_ROOT_PASS }} -e "GRANT ALL PRIVILEGES ON {{ mysql_db_name }}.* TO '{{ mysql_db_user }}'@'localhost';"
+      register: grant_privileges
+      changed_when: grant_privileges.stdout.find('Query OK') != -1
+      failed_when: grant_privileges.rc != 0
+      ignore_errors: yes
+
+
+    - name: Enable UFW
+      ufw:
+        policy: allow
+      become: yes
+
+    - name: Configure PHP-FPM pool
+      template:
+        src: fpm-pool.j2
+        dest: /etc/php/{{ PHP_VERSION | regex_replace('^php', '') }}/fpm/pool.d/{{ USERNAME }}.conf
+      vars:
+        pool_tcp: "{{ FPM_POOL_TCP }}"
+      become: yes
+
+    - name: Configure Nginx vhost
+      template:
+        src: nginx-vhost.j2
+        dest: /etc/nginx/sites-available/{{ DOMAIN }}
+      vars:
+        pool_tcp: "{{ FPM_POOL_TCP }}"
+      become: yes
+
+    - name: Enable Nginx vhost
+      file:
+        src: /etc/nginx/sites-available/{{ DOMAIN }}
+        dest: /etc/nginx/sites-enabled/{{ DOMAIN }}
+        state: link
+      become: yes
+
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded
+      become: yes
+
+    - name: Restart PHP-FPM
+      service:
+        name: "{{ PHP_VERSION }}-fpm"
+        state: restarted
+      become: yes
+
+    - name: Print MySQL info
+      debug:
+        msg: |
+          MySQL Info:
+          - Root Password: {{ MYSQL_ROOT_PASS }}
+      become: yes
+
+    - name: Print Nginx vhost info
+      debug:
+        msg: "{{ DOMAIN }} Vhost Document Root: {{ HOME_FOLDER }}/web/{{ DOMAIN }}/public_html"
+
+    - name: Print PHP-FPM pool info
+      debug:
+        msg: "PHP-FPM Pool Name: {{ USERNAME }}-fpm.conf"
+
+# Additional tasks...

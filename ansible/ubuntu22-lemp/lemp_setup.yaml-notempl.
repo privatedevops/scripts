@@ -1,0 +1,160 @@
+---
+- hosts: 65.109.170.234
+  become: yes
+  gather_facts: yes
+
+  vars:
+    DOMAIN: nampa.com
+    USERNAME: nampa
+    HOME_FOLDER: /home/{{ USERNAME }}
+    MYSQL_ROOT_PASS: FH141jFHA13224f
+    PHP_VERSION: php8.1
+    PHP_EXTENSIONS:
+      - imap
+      - redis
+      - amqp
+      - cli
+      - mysql
+      - zip
+      - mysql
+      - gmp
+      - fpm
+      - pgsql
+      - soap
+      - intl
+      - mbstring
+      - xml
+      - gd
+      - curl
+      - bcmath
+      - msgpack
+      - readline
+      - common
+      - imagick
+    MYSQL_CONFIG_FILE: /etc/mysql/my.cnf
+    INNODB_BUFFER_POOL_SIZE: 256M
+    INNODB_LOG_FILE_SIZE: 64M
+    INNODB_LOG_BUFFER_SIZE: 8M
+
+  tasks:
+    - name: Create {{ USERNAME }} user
+      user:
+        name: "{{ USERNAME }}"
+        shell: /bin/bash
+        home: "{{ HOME_FOLDER }}"
+      become: yes
+      # Create the user
+
+    - name: Create home folder for {{ USERNAME }}
+      file:
+        path: "{{ HOME_FOLDER }}"
+        state: directory
+        owner: "{{ USERNAME }}"
+        group: "{{ USERNAME }}"
+        mode: '0755'
+      become: yes
+      # Ensure the home folder is created
+
+    - name: Create web folder
+      file:
+        path: "{{ HOME_FOLDER }}/web/{{ DOMAIN }}"
+        state: directory
+        owner: "{{ USERNAME }}"
+        group: "{{ USERNAME }}"
+        mode: '0755'
+      become: yes
+      # Create the web folder
+
+    - name: Create logs folder
+      file:
+        path: "{{ HOME_FOLDER }}/web/{{ DOMAIN }}/logs"
+        state: directory
+        owner: "{{ USERNAME }}"
+        group: "{{ USERNAME }}"
+        mode: '0755'
+      become: yes
+      # Create the logs folder
+
+    - name: Update package cache
+      apt:
+        update_cache: yes
+      become: yes
+
+    - name: Install python3-mysqldb package
+      apt:
+        name: python3-mysqldb
+        state: present
+      become: yes
+
+    - name: Install MySQL 8
+      apt:
+        name: mysql-server
+        state: present
+      become: yes
+
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+      become: yes
+
+    - name: Update package cache (before installing PHP extensions)
+      apt:
+        update_cache: yes
+      become: yes
+
+    - name: Install PHP and PHP-FPM extensions
+      apt:
+        name: "{{ PHP_VERSION }}-{{ item }}"
+        state: present
+      become: yes
+      with_items: "{{ PHP_EXTENSIONS }}"
+
+    - name: Wait for MySQL to start
+      wait_for:
+        host: localhost
+        port: 3306
+        state: started
+      become: yes
+
+    - name: Create /root/.my.cnf file
+      copy:
+        content: |
+          [client]
+          user=root
+          password={{ MYSQL_ROOT_PASS }}
+        dest: /root/.my.cnf
+        mode: '0600'
+      become: yes
+
+    # Rest of the tasks remain unchanged...
+
+    - name: Enable UFW
+      ufw:
+        policy: allow
+      become: yes
+
+    - name: Restart PHP-FPM
+      service:
+        name: "{{ PHP_VERSION }}-fpm" 
+        state: restarted
+      become: yes
+
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
+      become: yes
+
+    - name: Print MySQL info
+      debug:
+        msg: "MySQL Root Password: {{ MYSQL_ROOT_PASS }}\nDatabase Name: wp1_{{ USERNAME }}"
+
+    - name: Print Nginx vhost info
+      debug:
+        msg: "Nginx Vhost Document Root: {{ HOME_FOLDER }}/web/{{ DOMAIN }}/public_html"
+
+    - name: Print PHP-FPM pool info
+      debug:
+        msg: "PHP-FPM Pool Name: {{ USERNAME }}-fpm.conf"
+
