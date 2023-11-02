@@ -187,6 +187,12 @@
         name: nginx
         state: present
       become: yes
+      
+    - name: Install the ppa:ondrej/php repo
+      apt_repository:
+        repo: ppa:ondrej/php
+        state: present
+        update_cache: yes
 
     - name: Update package cache (before installing PHP extensions)
       apt:
