@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-#       Copyrights Private Devops LTD. - https://privatedevops.com
+#       Private Devops LTD. - https://privatedevops.com
 #
 #	ex. ansible-playbook lemp_setup.yaml -i "127.0.0.1," -u root
 
@@ -24,8 +24,8 @@
     SWAP_PATH: /.swapfile1
     SWAP_SPACE: 2G  
 
-    FPM_POOL_TCP: 9081
-    PHP_VERSION: php8.1
+    FPM_POOL_TCP: 9082
+    PHP_VERSION: php8.2
     PHP_EXTENSIONS:
       - imap
       - redis
@@ -314,5 +314,36 @@
     - name: Print PHP-FPM pool info
       debug:
         msg: "PHP-FPM Pool Name: {{ USERNAME }}-fpm.conf"
+
+- name: Install Composer v2
+  hosts: all
+  become: true
+  tasks:
+    - name: Ensure PHP and required dependencies are installed
+      apt:
+        name:
+          - php
+          - php-cli
+          - php-mbstring
+          - unzip
+          - curl
+        state: present
+        update_cache: yes
+
+    - name: Download Composer installer
+      get_url:
+        url: https://getcomposer.org/installer
+        dest: /tmp/composer-setup.php
+        mode: '0755'
+
+    - name: Install Composer
+      command: >
+        php /tmp/composer-setup.php --install-dir=/usr/local/sbin --filename=composer
+      args:
+        creates: /usr/local/sbin/composer
+
+    - name: Verify Composer installation
+      command: /usr/local/sbin/composer --version
+      register: composer_version
 
 # Additional tasks...
