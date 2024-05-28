@@ -319,17 +319,6 @@
   hosts: all
   become: true
   tasks:
-    - name: Ensure PHP and required dependencies are installed
-      apt:
-        name:
-          - php
-          - php-cli
-          - php-mbstring
-          - unzip
-          - curl
-        state: present
-        update_cache: yes
-
     - name: Download Composer installer
       get_url:
         url: https://getcomposer.org/installer
