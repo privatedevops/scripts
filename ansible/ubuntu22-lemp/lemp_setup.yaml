@@ -64,7 +64,6 @@
         path: /etc/fstab
         line: "{{ SWAP_PATH }} swap swap defaults 0 0"
       when: swap_size.stdout == "0"
-      notify: Reload sysctl
 
     # Truncate the existing sysctl configuration file
     - name: Truncate sysctl configuration file

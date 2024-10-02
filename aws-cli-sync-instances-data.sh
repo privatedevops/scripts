@@ -36,7 +36,7 @@ fi
 
 for node in $webnodes; do
     echo "Updating LB node instance: $node"
-    rsync -e 'ssh -p 22 -o StrictHostKeyChecking=no' -aHvP /home/forge/api.storiaverse.com/ forge@${node}:/home/forge/api.storiaverse.com/
+    rsync -e 'ssh -p 22 -o StrictHostKeyChecking=no' -aHvP /home/forge/domain.com/ forge@${node}:/home/forge/domain.com/
     echo -e "Executing on $node: composer install ; php artisan cache:clear ; php artisan config:cache ; php artisan route:cache ; php artisan event:cache ; php artisan horizon:publish ; npm ci ; npm run build"
-    ssh -p 22 -o StrictHostKeyChecking=no forge@${node} "cd /home/forge/api.storiaverse.com/current/ ; composer install ; php artisan cache:clear ; php artisan config:cache ; php artisan route:cache ; php artisan event:cache ; php artisan horizon:publish ; npm ci ; npm run build"
+    ssh -p 22 -o StrictHostKeyChecking=no forge@${node} "cd /home/domain.com/ ; composer install ; php artisan cache:clear ; php artisan config:cache ; php artisan route:cache ; php artisan event:cache ; php artisan horizon:publish ; npm ci ; npm run build"
 done
