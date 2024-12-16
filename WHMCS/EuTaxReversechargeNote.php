@@ -69,13 +69,16 @@ use WHMCS\Database\Capsule;
 $customFieldId = 10; // Change this to match your VAT custom field ID
 
 // Array of EU country codes (including GB for B2B logic)
-$euCountries = ['AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 'SK', 'GB'];
+$euCountries = [
+    'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 
+    'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 
+    'SK', 'GB'
+];
 
 // Configuration: Note templates for EU and GB
 $noteTemplateEU = "VAT (0%): 0.00 {currency}\nDomestic turnover is not taxable, your VAT registration number is: {vat}.\nThis transaction complies with Article 196 of the EU VAT Directive 2006/112/EC (Reverse Charge).";
 
-$noteTemplateGB = "No VAT charged under UK reverse charge rules. Your VAT registration number is: {vat}.\n This transaction complies with the UK VAT Act 1994 and post-Brexit domestic reverse charge regulations.";
-
+$noteTemplateGB = "No VAT charged under UK reverse charge rules. Your VAT registration number is: {vat}.\nThis transaction complies with the UK VAT Act 1994 and post-Brexit domestic reverse charge regulations.";
 
 add_hook('InvoiceCreation', 1, function ($vars) use ($customFieldId, $euCountries, $noteTemplateEU, $noteTemplateGB) {
     $invoiceId = $vars['invoiceid'];
@@ -102,7 +105,25 @@ add_hook('InvoiceCreation', 1, function ($vars) use ($customFieldId, $euCountrie
 
     $userId = $invoice->userid;
 
-    // Retrieve VAT number
+    // Fetch client details
+    $clientDetails = Capsule::table('tblclients')
+        ->where('id', $userId)
+        ->first(['country', 'taxexempt', 'currency']);
+
+    if (!$clientDetails) {
+        logActivity("VAT Hook Debug: No client found for User ID: $userId");
+        return;
+    }
+
+    $clientCountry = $clientDetails->country;
+
+    // **EARLY CHECK**: Skip clients not in the EU or GB immediately
+    if (!in_array($clientCountry, $euCountries)) {
+        logActivity("VAT Hook Debug: Skipped User ID: $userId (Country: $clientCountry) - Not in EU or GB.");
+        return;
+    }
+
+    // Retrieve VAT number now that we've confirmed EU/GB
     $vatNumber = Capsule::table('tblcustomfieldsvalues')
         ->where('fieldid', $customFieldId)
         ->where('relid', $userId)
@@ -119,17 +140,6 @@ add_hook('InvoiceCreation', 1, function ($vars) use ($customFieldId, $euCountrie
         return;
     }
 
-    // Fetch client details
-    $clientDetails = Capsule::table('tblclients')
-        ->where('id', $userId)
-        ->first(['country', 'taxexempt', 'currency']);
-
-    if (!$clientDetails) {
-        logActivity("VAT Hook Debug: No client found for User ID: $userId");
-        return;
-    }
-
-    $clientCountry = $clientDetails->country;
     $isTaxExempt = $clientDetails->taxexempt;
     $currencyId = $clientDetails->currency;
 
@@ -138,16 +148,16 @@ add_hook('InvoiceCreation', 1, function ($vars) use ($customFieldId, $euCountrie
         ->where('id', $currencyId)
         ->value('code');
 
-    // Ensure $euCountries is an array (safety check to avoid null issues)
-    if (!is_array($euCountries)) {
-        logActivity("VAT Hook Debug: Invalid EU country list. Skipping processing for Invoice ID: $invoiceId");
-        return;
-    }
-
-    // Log all variables for debugging
+    // Log variables for debugging
     logActivity("VAT Hook Debug: Invoice ID: $invoiceId, User ID: $userId, Country: $clientCountry, Company Country: $companyCountryCode, Tax Exempt: $isTaxExempt, VAT Number: $vatNumber");
 
-    if (in_array($clientCountry, $euCountries) && $clientCountry !== $companyCountryCode && !empty($isTaxExempt) && !empty($vatNumber)) {
+    // Check conditions for adding the reverse charge note
+    if (
+        in_array($clientCountry, $euCountries) &&
+        $clientCountry !== $companyCountryCode &&
+        !empty($isTaxExempt) &&
+        !empty($vatNumber)
+    ) {
         // Use GB-specific note for UK clients
         $note = ($clientCountry === 'GB')
             ? str_replace('{vat}', $vatNumber, $noteTemplateGB)
