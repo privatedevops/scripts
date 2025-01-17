@@ -64,7 +64,6 @@
  */
 
 
-
 require_once __DIR__ . '/init.php';
 use WHMCS\Database\Capsule;
 
@@ -120,7 +119,13 @@ try {
         $isTaxExempt = $clientDetails->taxexempt;
         $currencyId = $clientDetails->currency;
 
-        // Retrieve VAT number from custom field
+        // **EARLY CHECK**: If client is not in EU or GB, skip now
+        if (!in_array($clientCountry, $euCountries)) {
+            echo "User ID: $userId (Country: $clientCountry) not in EU/GB. Skipping invoice ID: $invoiceId.\n";
+            continue;
+        }
+
+        // Retrieve VAT number from custom field only if in EU/GB
         $vatNumber = Capsule::table('tblcustomfieldsvalues')
             ->where('fieldid', $customFieldId)
             ->where('relid', $userId)
@@ -141,8 +146,12 @@ try {
         // Log details for debugging
         echo "Checking invoice ID: $invoiceId, User ID: $userId, Country: $clientCountry, Tax Exempt: $isTaxExempt, VAT Number: $vatNumber, Currency: $currency\n";
 
-        // Ensure $euCountries is valid and process the invoice
-        if (is_array($euCountries) && in_array($clientCountry, $euCountries) && $clientCountry !== $companyCountryCode && !empty($isTaxExempt) && !empty($vatNumber)) {
+        // Process conditions after confirming EU/GB membership
+        if (
+            $clientCountry !== $companyCountryCode &&
+            !empty($isTaxExempt) &&
+            !empty($vatNumber)
+        ) {
             // Use different note templates for EU and GB
             $note = ($clientCountry === 'GB')
                 ? str_replace(['{currency}', '{vat}'], [$currency, $vatNumber], $noteTemplateGB)
