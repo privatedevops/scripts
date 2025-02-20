@@ -129,11 +129,14 @@ add_hook('InvoiceCreation', 1, function ($vars) use ($customFieldId, $euCountrie
         ->where('relid', $userId)
         ->value('value');
 
+    /* Check disabled because return errors with clients without vat field */
+    /*
     if (empty($vatNumber)) {
         $vatNumber = Capsule::table('tblclients')
             ->where('id', $userId)
             ->value('vat');
     }
+    */
 
     if (!$vatNumber) {
         logActivity("VAT Hook Debug: No VAT Number found for User ID: $userId.");

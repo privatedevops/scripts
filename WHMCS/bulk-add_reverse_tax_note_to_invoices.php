@@ -131,12 +131,14 @@ try {
             ->where('relid', $userId)
             ->value('value');
 
-        // Fallback to native VAT field if custom field is empty
+        /* Check disabled because return errors with clients without vat field */
+        /*
         if (empty($vatNumber)) {
             $vatNumber = Capsule::table('tblclients')
                 ->where('id', $userId)
                 ->value('vat');
         }
+        */
 
         // Fetch the currency code
         $currency = Capsule::table('tblcurrencies')
