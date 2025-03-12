@@ -70,8 +70,8 @@ $customFieldId = 10; // Change this to match your VAT custom field ID
 
 // Array of EU country codes (including GB for B2B logic)
 $euCountries = [
-    'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR', 
-    'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI', 
+    'AT', 'BE', 'BG', 'CY', 'CZ', 'DE', 'DK', 'EE', 'ES', 'FI', 'FR', 'GR', 'HR',
+    'HU', 'IE', 'IT', 'LT', 'LU', 'LV', 'MT', 'NL', 'PL', 'PT', 'RO', 'SE', 'SI',
     'SK', 'GB'
 ];
 
@@ -129,15 +129,13 @@ add_hook('InvoiceCreation', 1, function ($vars) use ($customFieldId, $euCountrie
         ->where('relid', $userId)
         ->value('value');
 
-    /* Check disabled because return errors with clients without vat field */
-    /*
-    if (empty($vatNumber)) {
+
+/*    if (empty($vatNumber)) {
         $vatNumber = Capsule::table('tblclients')
             ->where('id', $userId)
             ->value('vat');
     }
-    */
-
+ */
     if (!$vatNumber) {
         logActivity("VAT Hook Debug: No VAT Number found for User ID: $userId.");
         return;
