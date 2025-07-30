@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Custom Options Fix Module
+ * Copyright (c) 2024 Private DevOps LTD. All rights reserved.
+ * https://privatedevops.com
+ */
+-->
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+    <module name="PrivateDevops_CustomOptionsFix" setup_version="1.0.0"/>
+</config>

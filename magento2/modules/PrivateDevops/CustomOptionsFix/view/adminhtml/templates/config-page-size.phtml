@@ -1,0 +1,15 @@
+<?php
+/**
+ * Custom Options Fix Module
+ * Copyright (c) 2024 Private DevOps LTD. All rights reserved.
+ * https://privatedevops.com
+ */
+
+/** @var \Magento\Framework\View\Element\Template $block */
+$om = \Magento\Framework\App\ObjectManager::getInstance();
+$scopeConfig = $om->get(\Magento\Framework\App\Config\ScopeConfigInterface::class);
+$pageSize = (int) $scopeConfig->getValue('catalog/customoptions/pagesize') ?: 200;
+?>
+<script>
+    window.customOptionsFixPageSize = <?= (int) $pageSize ?>;
+</script>

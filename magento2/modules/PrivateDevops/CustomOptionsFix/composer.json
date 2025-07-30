@@ -1,0 +1,19 @@
+{
+  "name": "privatedevops/magento2-customoptionsfix",
+  "description": "Custom Options Admin Page Size for Magento 2 by Private DevOps LTD",
+  "type": "magento2-module",
+  "version": "1.0.0",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "Private DevOps LTD",
+      "email": "info@privatedevops.com",
+      "homepage": "https://privatedevops.com"
+    }
+  ],
+  "autoload": {
+    "files": [
+      "registration.php"
+    ]
+  }
+}

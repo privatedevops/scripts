@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Custom Options Fix Module
+ * Copyright (c) 2024 Private DevOps LTD. All rights reserved.
+ * https://privatedevops.com
+ */
+-->
+
+
+
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Acl/etc/acl.xsd">
+    <acl>
+        <resources>
+            <!-- DO NOT redeclare Magento_Catalog::config_catalog, just nest your own resource inside -->
+            <resource id="PrivateDevops_CustomOptionsFix::config" title="Custom Products Items Grid Fix Settings" sortOrder="10"/>
+        </resources>
+    </acl>
+</config>
