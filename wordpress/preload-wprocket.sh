@@ -2,7 +2,7 @@
 # =====================================================================
 #  🧠 Safe WP Rocket Sitemap Preloader
 #  Author: Privatedevops Ltd  |  https://privatedevops.com
-#  Version: 1.4
+#  Version: 1.5
 #
 #  Description:
 #  ------------------------------------------------------------
@@ -17,6 +17,7 @@
 #   ✅ Load-aware (pauses if system load is too high)
 #   ✅ Prevents duplicate execution (via lock file)
 #   ✅ Optional media preload (-m) for /wp-content/uploads/
+#   ✅ WebP-aware: warms WebP Express + Cloudflare caches
 #   ✅ Logs with color-coded console output
 #   ✅ Prints total runtime
 #
@@ -41,8 +42,9 @@ YELLOW="\033[1;33m"; GRAY="\033[0;37m"; NC="\033[0m"
 # --- Extract domain name ---
 DOMAIN=$(echo "$SITEMAP_URL" | awk -F[/:] '{print $4}')
 LOG_FILE="/tmp/${DOMAIN}_wp_preload.log"
-USER_AGENT="PrivatedevopsLtd-WPRocketPreloader/1.4 (+https://privatedevops.com; ${DOMAIN})"
+USER_AGENT="PrivatedevopsLtd-WPRocketPreloader/1.5 (+https://privatedevops.com; ${DOMAIN})"
 LOCK_FILE="/tmp/${DOMAIN}.preload.lock"
+WEBP_HEADER="Accept: image/webp,image/apng,image/*,*/*;q=0.8"
 
 # --- Args check ---
 if [ -z "$SITEMAP_URL" ]; then
@@ -73,7 +75,7 @@ touch "$LOCK_FILE"
 TOTAL_START=$(date +%s%3N)
 echo -e "🚀 Starting WP Rocket safe preload for: ${GREEN}${DOMAIN}${NC}"
 echo "🌐 Target: $SITEMAP_URL"
-[[ "$PRELOAD_MEDIA" == true ]] && echo -e "🖼  Media preload: ${YELLOW}enabled (uploads only)${NC}"
+[[ "$PRELOAD_MEDIA" == true ]] && echo -e "🖼  Media preload: ${YELLOW}enabled (uploads only, WebP-aware)${NC}"
 echo "🕒 Started: $(date)" | tee "$LOG_FILE"
 
 # --- Function to extract <loc> URLs from sitemap (supports .gz) ---
@@ -113,7 +115,7 @@ preload_url() {
   done
 
   local start=$(date +%s%3N)
-  local html=$(curl -s --compressed --max-time 30 -A "$USER_AGENT" "$url")
+  local html=$(curl -s --compressed --max-time 30 -A "$USER_AGENT" -H "$WEBP_HEADER" "$url")
   local end=$(date +%s%3N)
   local duration_ms=$((end - start))
   local duration_s=$(awk "BEGIN {printf \"%.3f\", $duration_ms / 1000}")
@@ -121,21 +123,21 @@ preload_url() {
   echo -e "${BLUE}$(date '+%H:%M:%S')${NC} → ${GREEN}Preloaded${NC} ${GRAY}$url${NC}  ⏱ ${YELLOW}${duration_s}s${NC}"
   echo "$(date '+%H:%M:%S') → Preloaded $url  ⏱ ${duration_s}s" >> "$LOG_FILE"
 
-  # --- Optionally preload only uploads images ---
+  # --- Optionally preload only uploads images (WebP-aware) ---
   if [[ "$PRELOAD_MEDIA" == true && -n "$html" ]]; then
     echo -e "   ${GRAY}↳ Scanning uploads in $url...${NC}"
     echo "$html" |
       grep -Eo 'https?://[^"]+/wp-content/uploads/[^"]+\.(jpg|jpeg|png|webp|gif)' |
       sort -u |
       while read -r img; do
-        curl -s -I --compressed --max-time 15 -A "$USER_AGENT" "$img" >/dev/null
+        curl -s -I --compressed --max-time 15 -A "$USER_AGENT" -H "$WEBP_HEADER" "$img" >/dev/null
         echo -e "      ${YELLOW}↪ Warmed${NC} ${GRAY}$img${NC}" >> "$LOG_FILE"
         sleep 0.15
       done
   fi
 }
 export -f preload_url
-export USER_AGENT LOG_FILE MAX_LOAD RED GREEN BLUE YELLOW GRAY NC PRELOAD_MEDIA
+export USER_AGENT LOG_FILE MAX_LOAD RED GREEN BLUE YELLOW GRAY NC PRELOAD_MEDIA WEBP_HEADER
 
 # --- Run preload (parallel-safe) ---
 printf "%s\n" "${ALL_URLS[@]}" | xargs -n 1 -P "$PARALLEL_JOBS" bash -c 'preload_url "$@"' _
