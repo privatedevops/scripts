@@ -1,68 +1,62 @@
 #!/usr/bin/env bash
-
 # =====================================================================
-#  🌀 Safe WP Rocket Sitemap Preloader
-#  ---------------------------------------------------------------------
-#  Author: Privatedevops Ltd
-#  Website: https://privatedevops.com
-#  Version: 1.2.0
-#  License: MIT
+#  Safe WP Rocket Sitemap Preloader
+#  https://privatedevops.com  –  by Privatedevops Ltd
 #
-#  Description:
-#   A safe and efficient way to preload (warm) the WP Rocket cache using
-#   your sitemap index — page by page — without flushing or overloading
-#   your server.
+#  Recursively crawls sitemap index URLs and warms WP Rocket cache
+#  without purging it. Supports parallel execution (-p <threads>)
+#  to preload multiple pages simultaneously.
 #
-#  How it works:
-#   - Recursively parses all sitemap and child sitemap URLs.
-#   - Requests each page individually using curl with a custom User-Agent.
-#   - Waits a few seconds between requests to minimize load.
-#   - Writes detailed logs with timing information for each page.
+#  Example:
+#     ./preload https://gtime.bg/sitemap_index.xml -p 4
 #
-#  Example usage:
-#     ./preload https://example.com/sitemap_index.xml
-#     ./preload https://example.com/sitemap.xml
-#     ./preload https://example.com/      # works with homepage too
-#
-#  Log file:
-#     /tmp/<domain>_wp_preload.log
-#
-#  Author signature:
-#     🧠 Privatedevops Ltd - Cloud & Server Optimization Experts
+#  Notes:
+#     - Safe, lightweight, no cache purge.
+#     - Logs stored in /tmp/<domain>_wp_preload.log
 # =====================================================================
 
 SITEMAP_URL="$1"
-WAIT_TIME=2
+shift
+PARALLEL=1
+WAIT_TIME=1
 
-# --- Extract domain name from the sitemap URL ---
-DOMAIN=$(echo "$SITEMAP_URL" | awk -F[/:] '{print $4}')
-LOG_FILE="/tmp/${DOMAIN}_wp_preload.log"
-USER_AGENT="PrivatedevopsLtd-WPRocketPreloader/1.1 (+https://privatedevops.com; ${DOMAIN})"
+# --- Parse options ---
+while getopts "p:" opt; do
+  case $opt in
+    p) PARALLEL="$OPTARG" ;;
+    *) echo "Usage: $0 <sitemap-url> [-p threads]" && exit 1 ;;
+  esac
+done
 
 if [ -z "$SITEMAP_URL" ]; then
-  echo "Usage: $0 <sitemap-index-or-url>"
+  echo "Usage: $0 <sitemap-url> [-p threads]"
   exit 1
 fi
 
+# --- Extract domain ---
+DOMAIN=$(echo "$SITEMAP_URL" | awk -F[/:] '{print $4}')
+LOG_FILE="/tmp/${DOMAIN}_wp_preload.log"
+USER_AGENT="PrivatedevopsLtd-WPRocketPreloader/1.1 (+https://${DOMAIN}; https://privatedevops.com)"
+
 echo "🚀 Starting WP Rocket safe preload for: ${DOMAIN}"
-echo "🌐 Target: $SITEMAP_URL"
+echo "🌐 Target: ${SITEMAP_URL}"
+echo "🧵 Threads: ${PARALLEL}"
 echo "🕒 Started: $(date)" | tee "$LOG_FILE"
 
-# --- Function: extract <loc> URLs from sitemap (supports .gz) ---
+# --- Helper function: extract <loc> URLs from sitemap ---
 get_urls() {
   local url="$1"
   local tmp=$(mktemp)
   if [[ "$url" == *.gz ]]; then
-    echo "📦 Decompressing sitemap: $url" | tee -a "$LOG_FILE"
-    curl -s --compressed --max-time 30 --retry 3 -A "$USER_AGENT" "$url" | gunzip -c > "$tmp"
+    curl -s --compressed -A "$USER_AGENT" "$url" | gunzip -c > "$tmp"
   else
-    curl -s --compressed --max-time 30 --retry 3 -A "$USER_AGENT" "$url" > "$tmp"
+    curl -s --compressed -A "$USER_AGENT" "$url" > "$tmp"
   fi
   grep -oP '(?<=<loc>)[^<]+' "$tmp" | sed 's/[[:space:]]//g'
   rm -f "$tmp"
 }
 
-# --- Collect all sitemap URLs recursively ---
+# --- Collect all URLs ---
 ALL_URLS=()
 TOP_URLS=($(get_urls "$SITEMAP_URL"))
 for sm in "${TOP_URLS[@]}"; do
@@ -75,19 +69,21 @@ for sm in "${TOP_URLS[@]}"; do
 done
 ALL_URLS=($(printf "%s\n" "${ALL_URLS[@]}" | sort -u))
 
-for url in "${ALL_URLS[@]}"; do
-  START_TIME=$(date +%s%3N)
-  printf "%(%H:%M:%S)T → Preloading %s" -1 "$url" | tee -a "$LOG_FILE"
+# --- Function to preload one URL ---
+preload_url() {
+  local url="$1"
+  local start=$(date +%s%3N)
+  curl -s -I --compressed --max-time 30 --retry 2 -A "$USER_AGENT" "$url" > /dev/null
+  local end=$(date +%s%3N)
+  local duration=$(awk "BEGIN {print ($end - $start)/1000}")
+  printf "%s → Preloaded %s  ⏱ %.2fs\n" "$(date '+%H:%M:%S')" "$url" "$duration" | tee -a "$LOG_FILE"
+}
 
-  curl -s -I --compressed --max-time 30 --retry 2 -A "$USER_AGENT" "$url" >/dev/null
+export -f preload_url
+export USER_AGENT LOG_FILE
 
-  END_TIME=$(date +%s%3N)
-  DURATION_MS=$((END_TIME - START_TIME))
-  DURATION_SEC=$(awk "BEGIN {printf \"%.2f\", $DURATION_MS/1000}")
+# --- Run in parallel ---
+printf "%s\n" "${ALL_URLS[@]}" | xargs -n1 -P"$PARALLEL" bash -c 'preload_url "$@"' _
 
-  echo "  →  ⏱ ${DURATION_SEC}s" | tee -a "$LOG_FILE"
-  sleep "$WAIT_TIME"
-done
-
-echo "✅ Finished preload for ${DOMAIN} at $(date)" | tee -a "$LOG_FILE"
+echo "✅ Finished preload for ${DOMAIN} at $(date)"
 echo "🗒 Log saved to: $LOG_FILE"
