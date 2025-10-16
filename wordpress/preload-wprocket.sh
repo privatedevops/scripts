@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
-
 # =====================================================================
 #  🧠 Safe WP Rocket Sitemap Preloader
 #  Author: Privatedevops Ltd  |  https://privatedevops.com
-#  Version: 1.1
+#  Version: 1.4
 #
 #  Description:
 #  ------------------------------------------------------------
-#  A fully safe, sitemap-driven cache preloader for WordPress sites
-#  using WP Rocket. Instead of flushing all caches at once, this script
-#  recursively crawls the sitemap URLs (including nested XML sitemaps)
-#  and warms the cache page-by-page.
+#  A safe, sitemap-driven cache preloader for WP Rocket.
+#  Optionally, preload all WordPress media (uploads images only)
+#  referenced in each page using the `-m` flag.
 #
 #  Features:
 #  ------------------------------------------------------------
@@ -18,54 +16,51 @@
 #   ✅ Recursively follows sitemap index structure
 #   ✅ Load-aware (pauses if system load is too high)
 #   ✅ Prevents duplicate execution (via lock file)
-#   ✅ Clean color-coded console output
-#   ✅ Logs each request and its duration (ms precision)
-#   ✅ Prints total runtime at the end
-#   ✅ Custom User-Agent: PrivatedevopsLtd-WPRocketPreloader
+#   ✅ Optional media preload (-m) for /wp-content/uploads/
+#   ✅ Logs with color-coded console output
+#   ✅ Prints total runtime
 #
 #  Usage:
 #  ------------------------------------------------------------
-#     ./preload <sitemap-url> [-p <parallel_jobs>]
+#     ./preload <sitemap-url> [-p <parallel_jobs>] [-m]
 #
 #  Example:
-#     ./preload https://gtime.bg/sitemap_index.xml -p 2
-#
-#  Output:
-#  ------------------------------------------------------------
-#     🚀 Starting WP Rocket safe preload for: gtime.bg
-#     🌐 Target: https://gtime.bg/sitemap_index.xml
-#     13:35:19 → Preloaded https://gtime.bg/  ⏱ 0.143s
-#     ✅ Finished preload for gtime.bg in 4.27s
-#     🗒 Log saved: /tmp/gtime.bg_wp_preload.log
-#
+#     ./preload https://gtime.bg/sitemap_index.xml -p 2 -m
 # =====================================================================
-
 
 SITEMAP_URL="$1"
 WAIT_TIME=2
 MAX_LOAD=6
 PARALLEL_JOBS=1
+PRELOAD_MEDIA=false
 
 # --- Colors ---
 RED="\033[0;31m"; GREEN="\033[0;32m"; BLUE="\033[0;34m"
 YELLOW="\033[1;33m"; GRAY="\033[0;37m"; NC="\033[0m"
 
-# --- Extract domain name from URL ---
+# --- Extract domain name ---
 DOMAIN=$(echo "$SITEMAP_URL" | awk -F[/:] '{print $4}')
 LOG_FILE="/tmp/${DOMAIN}_wp_preload.log"
-USER_AGENT="PrivatedevopsLtd-WPRocketPreloader/1.1 (+https://privatedevops.com; ${DOMAIN})"
+USER_AGENT="PrivatedevopsLtd-WPRocketPreloader/1.4 (+https://privatedevops.com; ${DOMAIN})"
 LOCK_FILE="/tmp/${DOMAIN}.preload.lock"
 
 # --- Args check ---
 if [ -z "$SITEMAP_URL" ]; then
-  echo "Usage: $0 <sitemap-index-or-url> [-p concurrency]"
+  echo "Usage: $0 <sitemap-index-or-url> [-p concurrency] [-m preload_media]"
   exit 1
 fi
 
-# --- Optional concurrency flag ---
-if [[ "$2" == "-p" && "$3" =~ ^[0-9]+$ ]]; then
-  PARALLEL_JOBS="$3"
-fi
+# --- Optional flags ---
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -p)
+      PARALLEL_JOBS="$2"; shift 2 ;;
+    -m)
+      PRELOAD_MEDIA=true; shift ;;
+    *)
+      shift ;;
+  esac
+done
 
 # --- Prevent duplicate runs ---
 if [ -f "$LOCK_FILE" ]; then
@@ -76,9 +71,9 @@ touch "$LOCK_FILE"
 
 # --- Start timer ---
 TOTAL_START=$(date +%s%3N)
-
 echo -e "🚀 Starting WP Rocket safe preload for: ${GREEN}${DOMAIN}${NC}"
 echo "🌐 Target: $SITEMAP_URL"
+[[ "$PRELOAD_MEDIA" == true ]] && echo -e "🖼  Media preload: ${YELLOW}enabled (uploads only)${NC}"
 echo "🕒 Started: $(date)" | tee "$LOG_FILE"
 
 # --- Function to extract <loc> URLs from sitemap (supports .gz) ---
@@ -110,27 +105,37 @@ ALL_URLS=($(printf "%s\n" "${ALL_URLS[@]}" | sort -u))
 # --- Preload Function ---
 preload_url() {
   local url="$1"
-
   while true; do
     LOAD=$(awk '{print $1}' /proc/loadavg)
-    if (( $(echo "$LOAD < $MAX_LOAD" | bc -l) )); then
-      break
-    fi
+    if (( $(echo "$LOAD < $MAX_LOAD" | bc -l) )); then break; fi
     echo -e "${YELLOW}⏸ System load high ($LOAD ≥ $MAX_LOAD), waiting...${NC}"
     sleep 5
   done
 
   local start=$(date +%s%3N)
-  curl -s -I --compressed --max-time 30 --retry 2 -A "$USER_AGENT" "$url" > /dev/null
+  local html=$(curl -s --compressed --max-time 30 -A "$USER_AGENT" "$url")
   local end=$(date +%s%3N)
   local duration_ms=$((end - start))
   local duration_s=$(awk "BEGIN {printf \"%.3f\", $duration_ms / 1000}")
 
   echo -e "${BLUE}$(date '+%H:%M:%S')${NC} → ${GREEN}Preloaded${NC} ${GRAY}$url${NC}  ⏱ ${YELLOW}${duration_s}s${NC}"
   echo "$(date '+%H:%M:%S') → Preloaded $url  ⏱ ${duration_s}s" >> "$LOG_FILE"
+
+  # --- Optionally preload only uploads images ---
+  if [[ "$PRELOAD_MEDIA" == true && -n "$html" ]]; then
+    echo -e "   ${GRAY}↳ Scanning uploads in $url...${NC}"
+    echo "$html" |
+      grep -Eo 'https?://[^"]+/wp-content/uploads/[^"]+\.(jpg|jpeg|png|webp|gif)' |
+      sort -u |
+      while read -r img; do
+        curl -s -I --compressed --max-time 15 -A "$USER_AGENT" "$img" >/dev/null
+        echo -e "      ${YELLOW}↪ Warmed${NC} ${GRAY}$img${NC}" >> "$LOG_FILE"
+        sleep 0.15
+      done
+  fi
 }
 export -f preload_url
-export USER_AGENT LOG_FILE MAX_LOAD RED GREEN BLUE YELLOW GRAY NC
+export USER_AGENT LOG_FILE MAX_LOAD RED GREEN BLUE YELLOW GRAY NC PRELOAD_MEDIA
 
 # --- Run preload (parallel-safe) ---
 printf "%s\n" "${ALL_URLS[@]}" | xargs -n 1 -P "$PARALLEL_JOBS" bash -c 'preload_url "$@"' _
@@ -141,7 +146,7 @@ TOTAL_MS=$((TOTAL_END - TOTAL_START))
 TOTAL_SEC=$(awk "BEGIN {printf \"%.2f\", $TOTAL_MS / 1000}")
 
 printf "✅ Finished preload for %b%s%b at %b%s%b (duration: %b%.2fs%b)\n" \
-	  "$GREEN" "$DOMAIN" "$NC" "$YELLOW" "$(date '+%Y-%m-%d %H:%M:%S')" "$NC" "$YELLOW" "$TOTAL_SEC" "$NC" | tee -a "$LOG_FILE"
+  "$GREEN" "$DOMAIN" "$NC" "$YELLOW" "$(date '+%Y-%m-%d %H:%M:%S')" "$NC" "$YELLOW" "$TOTAL_SEC" "$NC" | tee -a "$LOG_FILE"
 
 printf "🗒   Log saved: %b%s%b\n" "$GRAY" "$LOG_FILE" "$NC" | tee -a "$LOG_FILE"
 
