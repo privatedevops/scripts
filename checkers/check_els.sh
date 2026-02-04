@@ -15,7 +15,7 @@ AUTH_PASS=""
 USE_SSL=true
 INSECURE_SSL=true
 
-SLACKHOOKURL='https://hooks.slack.com/services/.........'
+SLACKHOOKURL='https://.........'
 
 LOCKFILE="/var/run/search-restart.lock"
 HOSTNAME=$(/bin/hostname)

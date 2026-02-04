@@ -20,7 +20,7 @@ SKIPFILES="/root/scripts/bkp_excludes.list"
 SSHPORT="5698"
 
 # Slack
-SLACKHOOKURL='https://hooks.slack.com/services/.........'
+SLACKHOOKURL='https://.........'
 
 # Parallel backup
 PARALLEL=false          # true / false
