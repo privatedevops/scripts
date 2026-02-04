@@ -1,10 +1,4 @@
 #!/bin/bash
-#
-#       Copyrights Private Devops LTD. - https://privatedevops.com
-#
-
-
-#!/bin/bash
 set -euo pipefail
 
 #
@@ -20,7 +14,7 @@ SKIPFILES="/root/scripts/bkp_excludes.list"
 SSHPORT="5698"
 
 # Slack
-SLACKHOOKURL=''
+SLACKHOOKURL="__SET_VIA_ENV_OR_SECRETS__"
 
 # Parallel backup
 PARALLEL=false          # true / false

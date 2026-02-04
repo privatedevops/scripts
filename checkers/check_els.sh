@@ -15,7 +15,7 @@ AUTH_PASS=""
 USE_SSL=true
 INSECURE_SSL=true
 
-SLACKHOOKURL=''
+SLACKHOOKURL="__SET_VIA_ENV_OR_SECRETS__"
 
 LOCKFILE="/var/run/search-restart.lock"
 HOSTNAME=$(/bin/hostname)
