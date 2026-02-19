@@ -123,11 +123,13 @@ echo "[TUNING] Applying Guardian sysctl settings..."
 sed -i '/vm.swappiness/d' /etc/sysctl.conf
 sed -i '/vm.oom_kill_allocating_task/d' /etc/sysctl.conf
 sed -i '/vm.overcommit_memory/d' /etc/sysctl.conf
+sed -i '/vm.vfs_cache_pressure/d' /etc/sysctl.conf
 
 cat <<EOF >> /etc/sysctl.conf
-vm.swappiness=100
-vm.oom_kill_allocating_task=1
-vm.overcommit_memory=1
+vm.swappiness=10
+vm.oom_kill_allocating_task=0
+vm.overcommit_meory=1
+vm.vfs_cache_pressure = 100
 EOF
 
 sysctl -p /etc/sysctl.conf >/dev/null 2>&1
